@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  userId   Int    @id @default(autoincrement())
+  userName String @unique @db.VarChar(255)
+  phone    String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  role     Roles  @relation(fields: [roleId], references: [roleId])
+  roleId   Int
+}
+
+model Roles {
+  roleId        Int     @id @default(autoincrement())
+  roleName      String  @unique @db.VarChar(255)
+  rolePrivilege Int     @default(3) // 1 full access 2 moderator 3 viewer
+  Users         Users[]
+}
+
+model Students {
+  studentId         Int                 @id @default(autoincrement())
+  firstName         String              @unique @db.VarChar(255)
+  lastName          String              @unique @db.VarChar(255)
+  phone             String              @unique @db.VarChar(255)
+  parentPhone       String              @unique @db.VarChar(255)
+  idGrade           Int
+  grade             Grades              @relation(fields: [idGrade], references: [gradeId])
+  InvoiceInfo       InvoiceInfo[]
+  SubjectOnStudents SubjectOnStudents[]
+}
+
+model Grades {
+  gradeId   Int        @id @default(autoincrement())
+  gradeName String     @unique @db.VarChar(255)
+  Students  Students[]
+  Subjects  Subjects[]
+}
+
+model Subjects {
+  subjectId         Int                 @id @default(autoincrement())
+  subjectName       String              @unique @db.VarChar(255)
+  subjectPrice      Decimal             @db.Decimal(10, 2)
+  idGrade           Int
+  grade             Grades              @relation(fields: [idGrade], references: [gradeId])
+  SubjectOnTeachers SubjectOnTeachers[]
+  SubjectOnStudents SubjectOnStudents[]
+  InvoiceInfo       InvoiceInfo[]
+}
+
+model SubjectOnStudents {
+  subjectOnStudentId Int      @id @default(autoincrement())
+  idSubject          Int
+  idStudent          Int
+  subject            Subjects @relation(fields: [idSubject], references: [subjectId])
+  student            Students @relation(fields: [idStudent], references: [studentId])
+}
+
+model Specialization {
+  specializationId   Int        @id @default(autoincrement())
+  specializationName String     @unique @db.VarChar(255)
+  Teachers           Teachers[]
+}
+
+model Teachers {
+  teacherId         Int                 @id @default(autoincrement())
+  firstName         String              @unique @db.VarChar(255)
+  lastName          String              @unique @db.VarChar(255)
+  salary            Decimal             @db.Decimal(10, 2)
+  phone             String              @unique @db.VarChar(255)
+  idSpecialization  Int
+  specialization    Specialization      @relation(fields: [idSpecialization], references: [specializationId])
+  SubjectOnTeachers SubjectOnTeachers[]
+}
+
+model SubjectOnTeachers {
+  subjectOnTeachersId Int      @id @default(autoincrement())
+  idTeacher           Int
+  idSubject           Int      @unique
+  teacher             Teachers @relation(fields: [idTeacher], references: [teacherId])
+  subject             Subjects @relation(fields: [idSubject], references: [subjectId])
+}
+
+model Invoice {
+  invoiceId   Int           @id @default(autoincrement())
+  discount    Decimal       @db.Decimal(10, 2)
+  createdAt   DateTime      @default(now())
+  InvoiceInfo InvoiceInfo[]
+}
+
+model InvoiceInfo {
+  invoiceInfoId  Int      @id @default(autoincrement())
+  priceAmount    Decimal  @db.Decimal(10, 2)
+  priceRemaining Decimal  @db.Decimal(10, 2)
+  idInvoice      Int
+  idSubject      Int
+  idStudent      Int
+  student        Students @relation(fields: [idStudent], references: [studentId])
+  subject        Subjects @relation(fields: [idSubject], references: [subjectId])
+  invoice        Invoice  @relation(fields: [idInvoice], references: [invoiceId])
+}
