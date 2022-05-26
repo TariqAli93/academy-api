@@ -89,7 +89,7 @@ export const UserLogin = (req, res) => {
         },
         process.env.JWT_KEY,
         {
-          expiresIn: '1h',
+          expiresIn: '1d',
         },
       )
       res.send(token)

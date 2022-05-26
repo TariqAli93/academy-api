@@ -4,14 +4,17 @@ import {
   DeleteTeacher,
   GetAllTeachers,
   GetTeacherById,
+  GetSpecializations
 } from '../controllers/teachers.controller.js'
+import check from '../middlewares/checkAuth.middleware.js'
 
 const teacherRoute = (app) => {
-  app.post('/api/teachers', CreateTeacher)
-  app.patch('/api/teachers/:id', UpdateTeacher)
-  app.delete('/api/teachers/:id', DeleteTeacher)
-  app.get('/api/teachers', GetAllTeachers)
-  app.get('/api/teachers/:id', GetTeacherById)
+  app.post('/api/teachers',check, CreateTeacher)
+  app.patch('/api/teachers/:id',check, UpdateTeacher)
+  app.delete('/api/teachers',check, DeleteTeacher)
+  app.get('/api/teachers',check, GetAllTeachers)
+  app.get('/api/teachers/:id',check, GetTeacherById)
+  app.get('/api/specializations', check, GetSpecializations)
 }
 
 export default teacherRoute

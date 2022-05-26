@@ -5,13 +5,14 @@ import {
   GetInvoiceById,
   UpdateInvoice,
 } from '../controllers/invoices.controller.js'
+import check from '../middlewares/checkAuth.middleware.js'
 
 const invoiceRoute = (app) => {
-  app.post('/api/invoices', CreateInvoice)
-  app.patch('/api/invoices/:id', UpdateInvoice)
-  app.delete('/api/invoices/:id', DeleteInvoice)
-  app.get('/api/invoices', GetAllInvoices)
-  app.get('/api/invoices/:id', GetInvoiceById)
+  app.post('/api/invoices',check, CreateInvoice)
+  app.patch('/api/invoices/:id',check, UpdateInvoice)
+  app.delete('/api/invoices/:id',check, DeleteInvoice)
+  app.get('/api/invoices',check, GetAllInvoices)
+  app.get('/api/invoices/:id',check, GetInvoiceById)
 }
 
 export default invoiceRoute

@@ -52,8 +52,15 @@ export const UpdateTeacher = (req, res) => {
 }
 
 export const DeleteTeacher = (req, res) => {
-  const { id } = req.params
-  Teachers.delete(id, (err, data) => {
+  if(!req.body) {
+    return res.status(400).json({
+      success: false,
+      message: 'No data provided',
+    })
+  }
+  const { teacherId, subjectId } = req.body
+
+  Teachers.delete(teacherId, subjectId, (err, data) => {
     if (err) {
       res.status(500).json({
         success: false,
@@ -98,6 +105,23 @@ export const GetTeacherById = (req, res) => {
       res.status(200).json({
         success: true,
         message: 'Teacher fetched successfully',
+        data: data,
+      })
+    }
+  })
+}
+
+export const GetSpecializations = (req, res) => {
+  Teachers.specializations((err, data) => {
+    if (err) {
+      res.status(500).json({
+        success: false,
+        message: err,
+      })
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'Specializations fetched successfully',
         data: data,
       })
     }

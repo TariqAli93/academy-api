@@ -80,7 +80,7 @@ export const GetAllInvoices = (req, res) => {
       return res.status(200).json({
         success: true,
         message: 'Invoice retrieved',
-        data,
+        data
       })
     }
   })

@@ -50,20 +50,35 @@ Teachers.update = async (id, newTeacher, result) => {
       },
 
       include: {
-        SubjectOnTeachers: true,
+        SubjectOnTeachers: {
+          include: {
+            subject: true,
+          }
+        },
         specialization: true,
       },
     })
 
-    const updateRecord = await prismaInstance.subjectOnTeachers.update({
-      where: {
-        subjectOnTeachersId: teacher.SubjectOnTeachers[0].subjectOnTeachersId,
-      },
+    let updateRecord;
 
-      data: {
-        idSubject: newTeacher.subjectId,
-      },
-    })
+    if (teacher.SubjectOnTeachers.length > 0) {
+      updateRecord = await prismaInstance.subjectOnTeachers.update({
+        where: {
+          subjectOnTeachersId: teacher.SubjectOnTeachers[0].subjectOnTeachersId,
+        },
+
+        data: {
+          idSubject: newTeacher.subjectId,
+        },
+      })
+    } else {
+      updateRecord = await prismaInstance.subjectOnTeachers.create({
+        data: {
+          idSubject: newTeacher.subjectId,
+          idTeacher: teacher.teacherId,
+        },
+      })
+    }
 
     result(null, { teacher, updateRecord })
   } catch (error) {
@@ -71,15 +86,20 @@ Teachers.update = async (id, newTeacher, result) => {
     prismaErrorHandling(error, result)
   }
 }
-Teachers.delete = async (id, result) => {
+
+Teachers.delete = async (teacherId, subjectId, result) => {
   try {
-    const deleteRecord = await prismaInstance.subjectOnTeachers.delete({
-      where: {},
-    })
+    if (subjectId) {
+      const deleteRecord = await prismaInstance.subjectOnTeachers.delete({
+        where: {
+          idSubject: subjectId * 1,
+        },
+      })
+    }
 
     const teacher = await prismaInstance.teachers.delete({
       where: {
-        teacherId: parseInt(id),
+        teacherId: teacherId * 1,
       },
 
       include: {
@@ -88,7 +108,7 @@ Teachers.delete = async (id, result) => {
       },
     })
 
-    result(null, { teacher, deleteRecord })
+    result(null, { teacher })
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)
@@ -99,7 +119,11 @@ Teachers.getAll = async (result) => {
   try {
     const teacher = await prismaInstance.teachers.findMany({
       include: {
-        SubjectOnTeachers: true,
+        SubjectOnTeachers: {
+          include: {
+            subject: true,
+          }
+        },
         specialization: true,
       },
     })
@@ -131,4 +155,15 @@ Teachers.getById = async (id, result) => {
   }
 }
 
+
+Teachers.specializations = async (result) => {
+  try {
+    const specializations = await prismaInstance.specialization.findMany();
+
+    result(null, specializations)
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
+  }
+}
 export default Teachers

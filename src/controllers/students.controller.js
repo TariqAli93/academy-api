@@ -25,6 +25,32 @@ export const CreateStudent = (req, res) => {
   })
 }
 
+export const createStudentSubject = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: 'Student content can not be empty',
+    })
+  }
+
+  const studentId = req.body.studentId
+  const subjectId = req.body.subjectIds
+
+  Students.createSubject(studentId, subjectId, (err, data) => {
+    if (err) {
+      return res.status(500).send({
+        success: false,
+        message: err.message,
+      })
+    } else {
+      return res.status(200).send({
+        success: true,
+        message: 'Student subject created successfully',
+        data: data,
+      })
+    }
+  })
+}
+
 export const UpdateStudent = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
@@ -67,6 +93,23 @@ export const DeleteStudent = (req, res) => {
   })
 }
 
+export const deleteSubjectFromStudent = (req, res) => {
+  Students.deleteSubject(req.params.id, (err, data) => {
+    if (err) {
+      return res.status(500).send({
+        success: false,
+        message: err.message,
+      })
+    } else {
+      return res.status(200).send({
+        success: true,
+        message: 'Student subject deleted successfully',
+        data: data,
+      })
+    }
+  })
+}
+
 export const GetAllStudents = (req, res) => {
   Students.getAll((err, data) => {
     if (err) {
@@ -75,18 +118,11 @@ export const GetAllStudents = (req, res) => {
         message: err.message,
       })
     } else {
-      if (data.length === 0) {
-        return res.status(404).send({
-          success: false,
-          message: 'No students found',
-        })
-      } else {
-        return res.status(200).send({
-          success: true,
-          message: 'Students retrieved successfully',
-          data: data,
-        })
-      }
+      return res.status(200).send({
+        success: true,
+        message: 'Students retrieved successfully',
+        data: data,
+      })
     }
   })
 }

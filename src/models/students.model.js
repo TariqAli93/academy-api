@@ -38,6 +38,35 @@ Students.create = async (newStudnet, result) => {
   }
 }
 
+Students.createSubject = async (studentId, subjectId, result) => {
+  try {
+    if (subjectId.length > 1) {
+      const subjects = await prismaInstance.subjectOnStudents.createMany({
+        data: subjectId.map((subject) => {
+          return {
+            idStudent: studentId,
+            idSubject: subject,
+          }
+        }),
+      })
+
+      result(null, subjects)
+    } else {
+      const subject = await prismaInstance.subjectOnStudents.create({
+        data: {
+          idStudent: studentId,
+          idSubject: subjectId[0],
+        },
+      })
+
+      result(null, subject)
+    }
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
+  }
+}
+
 Students.update = async (id, newStudnet, result) => {
   try {
     const student = await prismaInstance.students.update({
@@ -81,6 +110,22 @@ Students.delete = async (id, result) => {
   }
 }
 
+
+Students.deleteSubject = async (id, result) => {
+  try {
+    const deleteRecord = await prismaInstance.subjectOnStudents.deleteMany({
+      where: {
+        subjectOnStudentId: parseInt(id),
+      },
+    })
+
+    result(null, deleteRecord)
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
+  }
+}
+
 Students.getAll = async (result) => {
   try {
     const students = await prismaInstance.students.findMany({
@@ -93,7 +138,12 @@ Students.getAll = async (result) => {
         grade: true,
       },
     })
-    result(null, students)
+    result(null, students.map(student => {
+      return {
+        ...student,
+        studentName: student.firstName + ' ' + student.lastName,
+      }
+    }))
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)

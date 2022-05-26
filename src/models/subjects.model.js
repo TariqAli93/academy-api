@@ -48,6 +48,18 @@ Subjects.update = async (id, newSubject, result) => {
 
 Subjects.delete = async (id, result) => {
   try {
+    const deleteRecords1 = await prismaInstance.subjectOnStudents.deleteMany({
+      where: {
+        idSubject: parseInt(id),
+      }
+    })
+
+    const deleteRecords2 = await prismaInstance.subjectOnTeachers.deleteMany({
+      where: {
+        idSubject: parseInt(id),
+      }
+    })
+    
     const subject = await prismaInstance.subjects.delete({
       where: {
         subjectId: parseInt(id),

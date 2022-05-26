@@ -3,6 +3,7 @@ import {
   prismaErrorHandling,
 } from '../middlewares/handleError.middleware.js'
 import moment from 'moment'
+moment.locale('ar')
 
 const Invoices = function (invoice) {
   this.discount = invoice.discount
@@ -14,17 +15,21 @@ const Invoices = function (invoice) {
 }
 
 Invoices.create = async (newInvoice, result) => {
+  console.log(newInvoice)
   try {
     const invoice = await prismaInstance.invoice.create({
       data: {
-        discount: newInvoice.discount,
-        createdAt: newInvoice.createdAt,
+        discount: newInvoice.discount * 1,
+        priceRemaining: newInvoice.priceRemaining * 1,
+        priceAmount: newInvoice.priceAmount * 1,
         InvoiceInfo: {
-          create: {
-            priceAmount: newInvoice.priceAmount,
-            priceRemaining: newInvoice.priceRemaining,
-            idStudent: newInvoice.studentId,
-            idSubject: newInvoice.subjectId,
+          createMany: {
+            data: newInvoice.subjectId.map(subject => {
+              return {
+                idStudent: newInvoice.studentId * 1,
+                idSubject: subject * 1,
+              }
+            })
           },
         },
       },
@@ -42,12 +47,23 @@ Invoices.update = async (id, updatedInvoice, result) => {
       where: {
         invoiceId: parseInt(id),
       },
-      include: {
-        InvoiceInfo: true,
-      },
       data: {
         discount: updatedInvoice.discount,
-      },
+        InvoiceInfo: {
+          update: {
+            where: {
+              invoiceInfoId: parseInt(updatedInvoice.invoiceInfoId),
+            },
+
+            data: {
+              priceAmount: updatedInvoice.priceAmount,
+              priceRemaining: updatedInvoice.priceRemaining,
+              idStudent: updatedInvoice.studentId,
+              idSubject: updatedInvoice.subjectId,
+            }
+          }
+        }
+      }
     })
 
     // const updateRecord = await prismaInstance.invoiceInfo.updateMany({
@@ -92,11 +108,33 @@ Invoices.getAll = async (result) => {
   try {
     const invoices = await prismaInstance.invoice.findMany({
       include: {
-        InvoiceInfo: true,
+        InvoiceInfo: {
+          include: {
+            invoice: true,
+            student: true,
+            subject: true,
+          }
+        },
       },
     })
 
-    result(null, invoices)
+    const invoice = invoices.map(invoice => {
+      let subjectsPrice = invoice.InvoiceInfo.reduce((acc, curr) => acc + curr.subject.subjectPrice * 1, 0);
+      // let subjectsRemainingPrice = invoice.InvoiceInfo.reduce((acc, curr) => acc + curr.priceRemaining * 1, 0)
+      return {
+        invoiceId: invoice.invoiceId,
+        subjects: invoice.InvoiceInfo.map(info => {
+          return info.subject
+        }),
+        student: invoice.InvoiceInfo[0].student,
+        subjectsPrice: subjectsPrice,
+        paidedPrice: invoice.priceAmount,
+        remainingPrice: invoice.priceRemaining,
+        createdAt: moment(invoice.createdAt).format('DD/MM/YYYY hh:mm A'),
+        discount: parseInt(invoice.discount),
+      }
+    })
+    result(null, invoice)
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)

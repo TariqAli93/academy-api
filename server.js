@@ -10,6 +10,7 @@ import studentRoute from './src/routes/students.route.js'
 import teacherRoute from './src/routes/teachers.route.js'
 import roleRoute from './src/routes/roles.route.js'
 import invoiceRoute from './src/routes/invoices.route.js'
+import settingRoutes from './src/routes/settings.route.js'
 
 // initialize the app
 const app = express()
@@ -27,6 +28,7 @@ studentRoute(app)
 teacherRoute(app)
 roleRoute(app)
 invoiceRoute(app)
+settingRoutes(app)
 
 // start server
 app.listen(process.env.PORT || 5000, () => {

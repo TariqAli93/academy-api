@@ -90,20 +90,26 @@ model SubjectOnTeachers {
 }
 
 model Invoice {
-  invoiceId   Int           @id @default(autoincrement())
-  discount    Decimal       @db.Decimal(10, 2)
-  createdAt   DateTime      @default(now())
-  InvoiceInfo InvoiceInfo[]
+  invoiceId      Int           @id @default(autoincrement())
+  discount       Decimal       @db.Decimal(10, 2)
+  createdAt      DateTime      @default(now())
+  priceAmount    Decimal       @db.Decimal(10, 2)
+  priceRemaining Decimal       @db.Decimal(10, 2)
+  InvoiceInfo    InvoiceInfo[]
 }
 
 model InvoiceInfo {
-  invoiceInfoId  Int      @id @default(autoincrement())
-  priceAmount    Decimal  @db.Decimal(10, 2)
-  priceRemaining Decimal  @db.Decimal(10, 2)
-  idInvoice      Int
-  idSubject      Int
-  idStudent      Int
-  student        Students @relation(fields: [idStudent], references: [studentId])
-  subject        Subjects @relation(fields: [idSubject], references: [subjectId])
-  invoice        Invoice  @relation(fields: [idInvoice], references: [invoiceId])
+  invoiceInfoId Int      @id @default(autoincrement())
+  idInvoice     Int
+  idSubject     Int
+  idStudent     Int
+  student       Students @relation(fields: [idStudent], references: [studentId])
+  subject       Subjects @relation(fields: [idSubject], references: [subjectId])
+  invoice       Invoice  @relation(fields: [idInvoice], references: [invoiceId])
+}
+
+model Settings {
+  appName    String  @unique @db.VarChar(255)
+  appVersion String  @db.VarChar(255)
+  isFirstRun Boolean @default(false)
 }
