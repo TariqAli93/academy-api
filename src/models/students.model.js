@@ -8,59 +8,38 @@ const Students = function (student) {
   this.lastName = student.lastName
   this.phone = student.phone
   this.parentPhone = student.parentPhone
-  this.gradeId = student.gradeId
-  this.subjectIds = student.subjectIds
+  this.idGrade = student.idGrade
+  this.updatedAt = student.updatedAt
+  this.createdBy = student.createdBy
+  this.idCourse = student.idCourse
 }
 
 Students.create = async (newStudnet, result) => {
   try {
+    console.log(newStudnet.idCourse)
     const student = await prismaInstance.students.create({
       data: {
         firstName: newStudnet.firstName,
         lastName: newStudnet.lastName,
         phone: newStudnet.phone,
         parentPhone: newStudnet.parentPhone,
-        idGrade: newStudnet.gradeId,
-        SubjectOnStudents: {
-          create: newStudnet.subjectIds.map((subjectId) => {
-            return {
-              idSubject: subjectId,
-            }
-          }),
-        },
+        idGrade: newStudnet.idGrade,
+        createdBy: newStudnet.createdBy,
+        StudentCourses: {
+          createMany: {
+            data: newStudnet.idCourse.map(id => {
+
+              return {
+                idCourse: id,
+                createdBy: newStudnet.createdBy,
+              }
+            })
+          },
+        }
       },
     })
 
     result(null, student)
-  } catch (error) {
-    console.error(error)
-    prismaErrorHandling(error, result)
-  }
-}
-
-Students.createSubject = async (studentId, subjectId, result) => {
-  try {
-    if (subjectId.length > 1) {
-      const subjects = await prismaInstance.subjectOnStudents.createMany({
-        data: subjectId.map((subject) => {
-          return {
-            idStudent: studentId,
-            idSubject: subject,
-          }
-        }),
-      })
-
-      result(null, subjects)
-    } else {
-      const subject = await prismaInstance.subjectOnStudents.create({
-        data: {
-          idStudent: studentId,
-          idSubject: subjectId[0],
-        },
-      })
-
-      result(null, subject)
-    }
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)
@@ -79,6 +58,7 @@ Students.update = async (id, newStudnet, result) => {
         phone: newStudnet.phone,
         parentPhone: newStudnet.parentPhone,
         idGrade: newStudnet.gradeId,
+        updatedAt: new Date().toISOString(),
       },
     })
 
@@ -91,10 +71,10 @@ Students.update = async (id, newStudnet, result) => {
 
 Students.delete = async (id, result) => {
   try {
-    const deleteRecord = await prismaInstance.subjectOnStudents.deleteMany({
+    await prismaInstance.studentCourses.deleteMany({
       where: {
         idStudent: parseInt(id),
-      },
+      }
     })
 
     const student = await prismaInstance.students.delete({
@@ -103,23 +83,7 @@ Students.delete = async (id, result) => {
       },
     })
 
-    result(null, { student, deleteRecord })
-  } catch (error) {
-    console.error(error)
-    prismaErrorHandling(error, result)
-  }
-}
-
-
-Students.deleteSubject = async (id, result) => {
-  try {
-    const deleteRecord = await prismaInstance.subjectOnStudents.deleteMany({
-      where: {
-        subjectOnStudentId: parseInt(id),
-      },
-    })
-
-    result(null, deleteRecord)
+    result(null, student)
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)
@@ -130,12 +94,14 @@ Students.getAll = async (result) => {
   try {
     const students = await prismaInstance.students.findMany({
       include: {
-        SubjectOnStudents: {
-          include: {
-            subject: true,
-          },
-        },
         grade: true,
+        user: true,
+        StudentCourses: {
+          include: {
+            course: true,
+            user: true,
+          }
+        }
       },
     })
     result(null, students.map(student => {
@@ -157,14 +123,51 @@ Students.getById = async (id, result) => {
         studentId: parseInt(id),
       },
       include: {
-        SubjectOnStudents: {
-          include: {
-            subject: true,
-          },
-        },
         grade: true,
+        user: true,
+        StudentCourses: {
+          include: {
+            course: true,
+            user: true,
+          }
+        }
       },
     })
+    result(null, student)
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
+  }
+}
+
+// student course api
+Students.addStudentCourse = async (idStudent, idCourse, createdBy, result) => {
+  try {
+    const student = await prismaInstance.studentCourses.createMany({
+      data: idCourse.map((id) => {
+        return {
+          idCourse: id,
+          idStudent: parseInt(idStudent),
+          createdBy: parseInt(createdBy),
+        }
+      })
+    })
+
+    result(null, student)
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
+  }
+}
+
+Students.deleteStudentCourse = async (studentCourseId, result) => {
+  try {
+    const student = await prismaInstance.studentCourses.delete({
+      where: {
+        studentCourseId: parseInt(studentCourseId),
+      },
+    })
+
     result(null, student)
   } catch (error) {
     console.error(error)

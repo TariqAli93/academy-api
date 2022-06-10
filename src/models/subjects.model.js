@@ -5,8 +5,9 @@ import {
 
 const Subjects = function (subject) {
   this.subjectName = subject.subjectName
-  this.subjectPrice = subject.subjectPrice
-  this.gradeId = subject.gradeId
+  this.idGrade = subject.idGrade
+  this.updatedAt = subject.updatedAt
+  this.createdBy = subject.createdBy
 }
 
 Subjects.create = async (newSubject, result) => {
@@ -14,8 +15,8 @@ Subjects.create = async (newSubject, result) => {
     const subject = await prismaInstance.subjects.create({
       data: {
         subjectName: newSubject.subjectName,
-        subjectPrice: newSubject.subjectPrice,
-        idGrade: parseInt(newSubject.gradeId),
+        idGrade: newSubject.idGrade * 1,
+        createdBy: newSubject.createdBy * 1,
       },
     })
 
@@ -26,87 +27,61 @@ Subjects.create = async (newSubject, result) => {
   }
 }
 
-Subjects.update = async (id, newSubject, result) => {
-  try {
-    const subject = await prismaInstance.subjects.update({
-      where: {
-        subjectId: parseInt(id),
-      },
-      data: {
-        subjectName: newSubject.subjectName,
-        subjectPrice: newSubject.subjectPrice,
-        idGrade: parseInt(newSubject.gradeId),
-      },
-    })
 
-    result(null, subject)
-  } catch (error) {
-    console.error(error)
-    result(prismaErrorHandling(error), null)
-  }
-}
-
-Subjects.delete = async (id, result) => {
-  try {
-    const deleteRecords1 = await prismaInstance.subjectOnStudents.deleteMany({
-      where: {
-        idSubject: parseInt(id),
-      }
-    })
-
-    const deleteRecords2 = await prismaInstance.subjectOnTeachers.deleteMany({
-      where: {
-        idSubject: parseInt(id),
-      }
-    })
-    
-    const subject = await prismaInstance.subjects.delete({
-      where: {
-        subjectId: parseInt(id),
-      },
-    })
-
-    result(null, subject)
-  } catch (error) {
-    console.error(error)
-    result(prismaErrorHandling(error), null)
-  }
-}
-
-Subjects.getAll = async (result) => {
+Subjects.FindAll = async (result) => {
   try {
     const subjects = await prismaInstance.subjects.findMany({
       include: {
-        SubjectOnStudents: true,
-        SubjectOnTeachers: true,
         grade: true,
-      },
+      }
     })
 
-    result(null, subjects)
+    result(null, subjects.map(subject => {
+      return {
+        ...subject,
+        subjectFullName: subject.subjectName + ' ' + subject.grade.gradeName,
+      }
+    }))
   } catch (error) {
     console.error(error)
     result(prismaErrorHandling(error), null)
   }
 }
 
-Subjects.getById = async (id, result) => {
+
+Subjects.update = async (newSubject, subjectId, result) => {
+  console.log(newSubject)
   try {
-    const subject = await prismaInstance.subjects.findUnique({
+    const subject = await prismaInstance.subjects.update({
       where: {
-        subjectId: parseInt(id),
+        subjectId: subjectId * 1,
       },
-      include: {
-        SubjectOnStudents: true,
-        SubjectOnTeachers: true,
-        grade: true,
+      data: {
+        subjectName: newSubject.subjectName,
+        idGrade: newSubject.idGrade * 1,
       },
     })
 
     result(null, subject)
   } catch (error) {
     console.error(error)
-    result(prismaErrorHandling(error), null)
+    prismaErrorHandling(error, result)
+  }
+}
+
+
+Subjects.delete = async (subjectId, result) => {
+  try {
+    const subject = await prismaInstance.subjects.delete({
+      where: {
+        subjectId: subjectId * 1,
+      },
+    })
+
+    result(null, subject)
+  } catch (error) {
+    console.error(error)
+    prismaErrorHandling(error, result)
   }
 }
 export default Subjects

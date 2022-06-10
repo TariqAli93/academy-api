@@ -11,31 +11,110 @@ datasource db {
 }
 
 model Users {
-  userId   Int    @id @default(autoincrement())
-  userName String @unique @db.VarChar(255)
-  phone    String @unique @db.VarChar(255)
-  password String @db.VarChar(255)
-  role     Roles  @relation(fields: [roleId], references: [roleId])
-  roleId   Int
+  userId         Int              @id @default(autoincrement())
+  userName       String           @unique @db.VarChar(255)
+  phone          String           @unique @db.VarChar(255)
+  password       String           @db.VarChar(255)
+  role           Roles            @default(USER)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  student        Students[]
+  grades         Grades[]
+  Subjects       Subjects[]
+  Teachers       Teachers[]
+  Halls          Halls[]
+  Courses        Courses[]
+  Invoice        Invoice[]
+  StudentCourses StudentCourses[]
 }
 
-model Roles {
-  roleId        Int     @id @default(autoincrement())
-  roleName      String  @unique @db.VarChar(255)
-  rolePrivilege Int     @default(3) // 1 full access 2 moderator 3 viewer
-  Users         Users[]
+enum Roles {
+  ADMIN
+  USER
 }
 
 model Students {
-  studentId         Int                 @id @default(autoincrement())
-  firstName         String              @unique @db.VarChar(255)
-  lastName          String              @unique @db.VarChar(255)
-  phone             String              @unique @db.VarChar(255)
-  parentPhone       String              @unique @db.VarChar(255)
-  idGrade           Int
-  grade             Grades              @relation(fields: [idGrade], references: [gradeId])
-  InvoiceInfo       InvoiceInfo[]
-  SubjectOnStudents SubjectOnStudents[]
+  studentId      Int              @id @default(autoincrement())
+  firstName      String           @unique @db.VarChar(255)
+  lastName       String           @unique @db.VarChar(255)
+  phone          String           @unique @db.VarChar(255)
+  parentPhone    String           @unique @db.VarChar(255)
+  idGrade        Int
+  grade          Grades           @relation(fields: [idGrade], references: [gradeId])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  createdBy      Int
+  user           Users?           @relation(fields: [createdBy], references: [userId])
+  StudentCourses StudentCourses[]
+  Invoice        Invoice[]
+}
+
+model Courses {
+  courseId       Int              @id @default(autoincrement())
+  courseName     String           @db.VarChar(255)
+  coursePrice    Decimal          @db.Decimal(10, 2)
+  startAt        DateTime         @default(now())
+  endAt          DateTime
+  isFinished     Boolean          @default(false)
+  discount       Int              @default(0)
+  percentage     Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  createdBy      Int
+  SubjectCourse  SubjectCourse[]
+  InvoiceInfo    InvoiceInfo[]
+  StudentCourses StudentCourses[]
+  user           Users?           @relation(fields: [createdBy], references: [userId])
+}
+
+model StudentCourses {
+  studentCourseId Int      @id @default(autoincrement())
+  idStudent       Int
+  idCourse        Int
+  student         Students @relation(fields: [idStudent], references: [studentId])
+  course          Courses  @relation(fields: [idCourse], references: [courseId])
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  createdBy       Int
+  user            Users?   @relation(fields: [createdBy], references: [userId])
+}
+
+model SubjectCourse {
+  subjectCourseId Int      @id @default(autoincrement())
+  idSubject       Int
+  idCourse        Int
+  idTeacher       Int
+  idHall          Int
+  hall            Halls    @relation(fields: [idHall], references: [hallId])
+  teacher         Teachers @relation(fields: [idTeacher], references: [teacherId])
+  subject         Subjects @relation(fields: [idSubject], references: [subjectId])
+  course          Courses  @relation(fields: [idCourse], references: [courseId])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Teachers {
+  teacherId      Int             @id @default(autoincrement())
+  teacherName    String          @unique @db.VarChar(255)
+  phone          String          @unique @db.VarChar(255)
+  specialization String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  createdBy      Int
+  SubjectCourse  SubjectCourse[]
+  user           Users?          @relation(fields: [createdBy], references: [userId])
+}
+
+model Subjects {
+  subjectId     Int             @id @default(autoincrement())
+  subjectName   String          @unique @db.VarChar(255)
+  idGrade       Int
+  grade         Grades          @relation(fields: [idGrade], references: [gradeId])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  createdBy     Int
+  SubjectCourse SubjectCourse[]
+  user          Users?          @relation(fields: [createdBy], references: [userId])
 }
 
 model Grades {
@@ -43,73 +122,47 @@ model Grades {
   gradeName String     @unique @db.VarChar(255)
   Students  Students[]
   Subjects  Subjects[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  createdBy Int
+  user      Users?     @relation(fields: [createdBy], references: [userId])
 }
 
-model Subjects {
-  subjectId         Int                 @id @default(autoincrement())
-  subjectName       String              @unique @db.VarChar(255)
-  subjectPrice      Decimal             @db.Decimal(10, 2)
-  idGrade           Int
-  grade             Grades              @relation(fields: [idGrade], references: [gradeId])
-  SubjectOnTeachers SubjectOnTeachers[]
-  SubjectOnStudents SubjectOnStudents[]
-  InvoiceInfo       InvoiceInfo[]
-}
-
-model SubjectOnStudents {
-  subjectOnStudentId Int      @id @default(autoincrement())
-  idSubject          Int
-  idStudent          Int
-  subject            Subjects @relation(fields: [idSubject], references: [subjectId])
-  student            Students @relation(fields: [idStudent], references: [studentId])
-}
-
-model Specialization {
-  specializationId   Int        @id @default(autoincrement())
-  specializationName String     @unique @db.VarChar(255)
-  Teachers           Teachers[]
-}
-
-model Teachers {
-  teacherId         Int                 @id @default(autoincrement())
-  firstName         String              @unique @db.VarChar(255)
-  lastName          String              @unique @db.VarChar(255)
-  salary            Decimal             @db.Decimal(10, 2)
-  phone             String              @unique @db.VarChar(255)
-  idSpecialization  Int
-  specialization    Specialization      @relation(fields: [idSpecialization], references: [specializationId])
-  SubjectOnTeachers SubjectOnTeachers[]
-}
-
-model SubjectOnTeachers {
-  subjectOnTeachersId Int      @id @default(autoincrement())
-  idTeacher           Int
-  idSubject           Int      @unique
-  teacher             Teachers @relation(fields: [idTeacher], references: [teacherId])
-  subject             Subjects @relation(fields: [idSubject], references: [subjectId])
+model Halls {
+  hallId        Int             @id @default(autoincrement())
+  hallName      String          @unique @db.VarChar(255)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  createdBy     Int
+  SubjectCourse SubjectCourse[]
+  user          Users?          @relation(fields: [createdBy], references: [userId])
 }
 
 model Invoice {
-  invoiceId      Int           @id @default(autoincrement())
-  discount       Decimal       @db.Decimal(10, 2)
-  createdAt      DateTime      @default(now())
-  priceAmount    Decimal       @db.Decimal(10, 2)
-  priceRemaining Decimal       @db.Decimal(10, 2)
-  InvoiceInfo    InvoiceInfo[]
+  invoiceId   Int           @id @default(autoincrement())
+  idStudent   Int
+  installment Int           @default(1)
+  createdBy   Int
+  InvoiceInfo InvoiceInfo[]
+  amount      Int
+  remaining   Int
+  createdAt   DateTime      @default(now())
+  user        Users?        @relation(fields: [createdBy], references: [userId])
+  student     Students?     @relation(fields: [idStudent], references: [studentId])
 }
 
 model InvoiceInfo {
-  invoiceInfoId Int      @id @default(autoincrement())
+  invoiceInfoId Int     @id @default(autoincrement())
   idInvoice     Int
-  idSubject     Int
-  idStudent     Int
-  student       Students @relation(fields: [idStudent], references: [studentId])
-  subject       Subjects @relation(fields: [idSubject], references: [subjectId])
-  invoice       Invoice  @relation(fields: [idInvoice], references: [invoiceId])
+  idCourse      Int
+  invoice       Invoice @relation(fields: [idInvoice], references: [invoiceId])
+  course        Courses @relation(fields: [idCourse], references: [courseId])
 }
 
 model Settings {
-  appName    String  @unique @db.VarChar(255)
-  appVersion String  @db.VarChar(255)
-  isFirstRun Boolean @default(false)
+  appName    String   @unique @db.VarChar(255)
+  appVersion String   @db.VarChar(255)
+  isFirstRun Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

@@ -52,15 +52,7 @@ export const UpdateTeacher = (req, res) => {
 }
 
 export const DeleteTeacher = (req, res) => {
-  if(!req.body) {
-    return res.status(400).json({
-      success: false,
-      message: 'No data provided',
-    })
-  }
-  const { teacherId, subjectId } = req.body
-
-  Teachers.delete(teacherId, subjectId, (err, data) => {
+  Teachers.delete(req.params.id, (err, data) => {
     if (err) {
       res.status(500).json({
         success: false,

@@ -7,7 +7,7 @@ const User = function (user) {
   this.username = user.username
   this.password = user.password
   this.phone = user.phone
-  this.roleId = user.roleId
+  this.role = user.role
 }
 
 User.create = async (newUser, result) => {
@@ -17,7 +17,7 @@ User.create = async (newUser, result) => {
         userName: newUser.username,
         password: newUser.password,
         phone: newUser.phone,
-        roleId: newUser.roleId,
+        role: newUser.role,
       },
     })
 
@@ -38,7 +38,7 @@ User.update = async (userId, updatedUser, result) => {
         userName: updatedUser.username,
         password: updatedUser.password,
         phone: updatedUser.phone,
-        roleId: updatedUser.roleId,
+        role: updatedUser.role,
       },
     })
     result(null, user)
@@ -117,11 +117,7 @@ User.login = async (userName, password, result) => {
             password: password,
           },
         ],
-      },
-
-      include: {
-        role: true,
-      },
+      }
     })
 
     if (user) {

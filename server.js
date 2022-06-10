@@ -8,9 +8,12 @@ import gradeRoute from './src/routes/grades.route.js'
 import subjectRoute from './src/routes/subjects.route.js'
 import studentRoute from './src/routes/students.route.js'
 import teacherRoute from './src/routes/teachers.route.js'
-import roleRoute from './src/routes/roles.route.js'
 import invoiceRoute from './src/routes/invoices.route.js'
 import settingRoutes from './src/routes/settings.route.js'
+import reportRoute from './src/routes/reports.route.js'
+import coursesRoute from './src/routes/courses.route.js'
+import subjectCourseRoute from './src/routes/subjectCourse.route.js'
+import hallsRoute from './src/routes/halls.route.js'
 
 // initialize the app
 const app = express()
@@ -26,9 +29,12 @@ gradeRoute(app)
 subjectRoute(app)
 studentRoute(app)
 teacherRoute(app)
-roleRoute(app)
 invoiceRoute(app)
 settingRoutes(app)
+reportRoute(app)
+coursesRoute(app)
+subjectCourseRoute(app)
+hallsRoute(app)
 
 // start server
 app.listen(process.env.PORT || 5000, () => {

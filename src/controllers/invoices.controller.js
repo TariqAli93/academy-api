@@ -36,7 +36,7 @@ export const UpdateInvoice = (req, res) => {
 
   const updatedInvoice = new Invoices(req.body)
 
-  Invoices.update(req.params.id, updatedInvoice, (err, data) => {
+  Invoices.update(updatedInvoice, req.params.id, (err, data) => {
     if (err) {
       return res.status(500).json({
         success: false,
@@ -69,8 +69,8 @@ export const DeleteInvoice = (req, res) => {
   })
 }
 
-export const GetAllInvoices = (req, res) => {
-  Invoices.getAll((err, data) => {
+export const FindAllInvoices = (req, res) => {
+  Invoices.FindAll((err, data) => {
     if (err) {
       return res.status(500).json({
         success: false,
@@ -87,7 +87,7 @@ export const GetAllInvoices = (req, res) => {
 }
 
 export const GetInvoiceById = (req, res) => {
-  Invoices.getById(req.params.id, (err, data) => {
+  Invoices.findById(req.params.id, (err, data) => {
     if (err) {
       return res.status(500).json({
         success: false,

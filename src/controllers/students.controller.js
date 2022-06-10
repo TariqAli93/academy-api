@@ -25,32 +25,6 @@ export const CreateStudent = (req, res) => {
   })
 }
 
-export const createStudentSubject = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: 'Student content can not be empty',
-    })
-  }
-
-  const studentId = req.body.studentId
-  const subjectId = req.body.subjectIds
-
-  Students.createSubject(studentId, subjectId, (err, data) => {
-    if (err) {
-      return res.status(500).send({
-        success: false,
-        message: err.message,
-      })
-    } else {
-      return res.status(200).send({
-        success: true,
-        message: 'Student subject created successfully',
-        data: data,
-      })
-    }
-  })
-}
-
 export const UpdateStudent = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
@@ -87,23 +61,6 @@ export const DeleteStudent = (req, res) => {
       return res.status(200).send({
         success: true,
         message: 'Student deleted successfully',
-        data: data,
-      })
-    }
-  })
-}
-
-export const deleteSubjectFromStudent = (req, res) => {
-  Students.deleteSubject(req.params.id, (err, data) => {
-    if (err) {
-      return res.status(500).send({
-        success: false,
-        message: err.message,
-      })
-    } else {
-      return res.status(200).send({
-        success: true,
-        message: 'Student subject deleted successfully',
         data: data,
       })
     }
@@ -147,6 +104,47 @@ export const GetStudentById = (req, res) => {
           data: data,
         })
       }
+    }
+  })
+}
+
+export const AddStudentCourse = (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: 'Student content can not be empty',
+    })
+  }
+
+  Students.addStudentCourse(req.body.idStudent, req.body.idCourse, req.body.createdBy, (err, data) => {
+    if (err) {
+      return res.status(500).send({
+        success: false,
+        message: err.message,
+      })
+    } else {
+      return res.status(200).send({
+        success: true,
+        message: 'Student course added successfully',
+        data: data,
+      })
+    }
+  })
+}
+
+
+export const DeleteStudentCourse = (req, res) => {
+  Students.deleteStudentCourse(req.params.id, (err, data) => {
+    if (err) {
+      return res.status(500).send({
+        success: false,
+        message: err.message,
+      })
+    } else {
+      return res.status(200).send({
+        success: true,
+        message: 'Student course deleted successfully',
+        data: data,
+      })
     }
   })
 }

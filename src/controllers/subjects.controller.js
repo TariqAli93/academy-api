@@ -36,7 +36,7 @@ export const UpdateSubject = (req, res) => {
 
   const newSubject = new Subjects(req.body)
 
-  Subjects.update(req.params.id, newSubject, (err, subject) => {
+  Subjects.update(newSubject, req.params.id, (err, subject) => {
     if (err) {
       res.status(500).json({
         success: false,
@@ -69,8 +69,8 @@ export const DeleteSubject = (req, res) => {
   })
 }
 
-export const GetSubjects = (req, res) => {
-  Subjects.getAll((err, subjects) => {
+export const FindAllSubjects = (req, res) => {
+  Subjects.FindAll((err, subjects) => {
     if (err) {
       res.status(500).json({
         success: false,
@@ -87,30 +87,6 @@ export const GetSubjects = (req, res) => {
           success: true,
           message: 'Subjects retrieved successfully',
           data: subjects,
-        })
-      }
-    }
-  })
-}
-
-export const GetSubjectById = (req, res) => {
-  Subjects.getById(req.params.id, (err, subject) => {
-    if (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      })
-    } else {
-      if (!subject) {
-        res.status(404).json({
-          success: false,
-          message: 'No subject found',
-        })
-      } else {
-        res.status(201).json({
-          success: true,
-          message: 'Subject retrieved successfully',
-          data: subject,
         })
       }
     }

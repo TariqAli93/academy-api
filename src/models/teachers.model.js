@@ -4,28 +4,22 @@ import {
 } from '../middlewares/handleError.middleware.js'
 
 const Teachers = function (teacher) {
-  this.firstName = teacher.firstName
-  this.lastName = teacher.lastName
-  this.salary = teacher.salary
+  this.teacherName = teacher.teacherName
   this.phone = teacher.phone
-  this.specializationId = teacher.specializationId
+  this.specialization = teacher.specialization
   this.subjectId = teacher.subjectId
+  this.createdBy = teacher.createdBy
+  this.updatedAt = teacher.updatedAt
 }
 
 Teachers.create = async (newTeacher, result) => {
   try {
     const teacher = await prismaInstance.teachers.create({
       data: {
-        firstName: newTeacher.firstName,
-        lastName: newTeacher.lastName,
-        salary: newTeacher.salary,
+        teacherName: newTeacher.teacherName,
         phone: newTeacher.phone,
-        idSpecialization: newTeacher.specializationId,
-        SubjectOnTeachers: {
-          create: {
-            idSubject: newTeacher.subjectId,
-          },
-        },
+        specialization: newTeacher.specialization,
+        createdBy: newTeacher.createdBy,
       },
     })
 
@@ -35,6 +29,7 @@ Teachers.create = async (newTeacher, result) => {
     prismaErrorHandling(error, result)
   }
 }
+
 Teachers.update = async (id, newTeacher, result) => {
   try {
     const teacher = await prismaInstance.teachers.update({
@@ -42,69 +37,24 @@ Teachers.update = async (id, newTeacher, result) => {
         teacherId: parseInt(id),
       },
       data: {
-        firstName: newTeacher.firstName,
-        lastName: newTeacher.lastName,
-        salary: newTeacher.salary,
+        teacherName: newTeacher.teacherName,
         phone: newTeacher.phone,
-        idSpecialization: newTeacher.specializationId,
-      },
-
-      include: {
-        SubjectOnTeachers: {
-          include: {
-            subject: true,
-          }
-        },
-        specialization: true,
+        specialization: newTeacher.specialization,
       },
     })
 
-    let updateRecord;
-
-    if (teacher.SubjectOnTeachers.length > 0) {
-      updateRecord = await prismaInstance.subjectOnTeachers.update({
-        where: {
-          subjectOnTeachersId: teacher.SubjectOnTeachers[0].subjectOnTeachersId,
-        },
-
-        data: {
-          idSubject: newTeacher.subjectId,
-        },
-      })
-    } else {
-      updateRecord = await prismaInstance.subjectOnTeachers.create({
-        data: {
-          idSubject: newTeacher.subjectId,
-          idTeacher: teacher.teacherId,
-        },
-      })
-    }
-
-    result(null, { teacher, updateRecord })
+    result(null, teacher)
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)
   }
 }
 
-Teachers.delete = async (teacherId, subjectId, result) => {
+Teachers.delete = async (teacherId, result) => {
   try {
-    if (subjectId) {
-      const deleteRecord = await prismaInstance.subjectOnTeachers.delete({
-        where: {
-          idSubject: subjectId * 1,
-        },
-      })
-    }
-
     const teacher = await prismaInstance.teachers.delete({
       where: {
         teacherId: teacherId * 1,
-      },
-
-      include: {
-        SubjectOnTeachers: true,
-        specialization: true,
       },
     })
 
@@ -119,15 +69,9 @@ Teachers.getAll = async (result) => {
   try {
     const teacher = await prismaInstance.teachers.findMany({
       include: {
-        SubjectOnTeachers: {
-          include: {
-            subject: true,
-          }
-        },
-        specialization: true,
-      },
+        user: true,
+      }
     })
-
     result(null, teacher)
   } catch (error) {
     console.error(error)
@@ -141,26 +85,12 @@ Teachers.getById = async (id, result) => {
       where: {
         teacherId: parseInt(id),
       },
-
       include: {
-        SubjectOnTeachers: true,
-        specialization: true,
-      },
+        user: true,
+      }
     })
 
     result(null, teacher)
-  } catch (error) {
-    console.error(error)
-    prismaErrorHandling(error, result)
-  }
-}
-
-
-Teachers.specializations = async (result) => {
-  try {
-    const specializations = await prismaInstance.specialization.findMany();
-
-    result(null, specializations)
   } catch (error) {
     console.error(error)
     prismaErrorHandling(error, result)
