@@ -11,6 +11,7 @@ const Invoices = function (invoice) {
   this.idCourse = invoice.idCourse
   this.amount = invoice.amount
   this.remaining = invoice.remaining
+  this.monthlyPaid = invoice.monthlyPaid
 }
 
 Invoices.create = async (newInvoice, result) => {
@@ -22,6 +23,7 @@ Invoices.create = async (newInvoice, result) => {
         createdBy: newInvoice.createdBy * 1,
         amount: newInvoice.amount * 1,
         remaining: newInvoice.remaining * 1,
+        monthlyPaid: newInvoice.monthlyPaid * 1,
         InvoiceInfo: {
           createMany: {
             data: newInvoice.idCourse.map(id => {
@@ -70,6 +72,7 @@ Invoices.FindAll = async (result) => {
         createdAt: invoice.createdAt,
         amount: invoice.amount,
         remaining: invoice.remaining,
+        monthlyPaid: invoice.monthlyPaid,
         discount: invoice.student.StudentCourses.reduce((acc, cur) => acc + cur.course.discount * 1, 0),
       }
     }))
@@ -86,7 +89,7 @@ Invoices.delete = async (invoiceId, result) => {
         idInvoice: invoiceId * 1
       }
     })
-    
+
     const invoice = await prismaInstance.invoice.delete({
       where: {
         invoiceId: invoiceId * 1

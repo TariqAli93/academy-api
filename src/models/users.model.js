@@ -4,20 +4,22 @@ import {
 } from '../middlewares/handleError.middleware.js'
 
 const User = function (user) {
-  this.username = user.username
+  this.userName = user.userName
   this.password = user.password
   this.phone = user.phone
   this.role = user.role
+  this.isActive = user.isActive
 }
 
 User.create = async (newUser, result) => {
   try {
     const user = await prismaInstance.users.create({
       data: {
-        userName: newUser.username,
+        userName: newUser.userName,
         password: newUser.password,
         phone: newUser.phone,
         role: newUser.role,
+        isActive: newUser.isActive,
       },
     })
 
@@ -35,12 +37,14 @@ User.update = async (userId, updatedUser, result) => {
         userId: userId * 1,
       },
       data: {
-        userName: updatedUser.username,
+        userName: updatedUser.userName,
         password: updatedUser.password,
         phone: updatedUser.phone,
         role: updatedUser.role,
+        isActive: updatedUser.isActive,
       },
     })
+
     result(null, user)
   } catch (error) {
     console.error(error)
@@ -48,13 +52,18 @@ User.update = async (userId, updatedUser, result) => {
   }
 }
 
-User.delete = async (userId, result) => {
+User.delete = async (userId, isActive, result) => {
   try {
-    const user = await prismaInstance.users.delete({
+    const user = await prismaInstance.users.update({
       where: {
         userId: userId * 1,
       },
+
+      data: {
+        isActive: isActive,
+      }
     })
+
     result(null, user)
   } catch (error) {
     console.error(error)
@@ -116,6 +125,9 @@ User.login = async (userName, password, result) => {
           {
             password: password,
           },
+          {
+            isActive: true,
+          }
         ],
       }
     })

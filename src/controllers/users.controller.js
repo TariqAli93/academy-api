@@ -36,7 +36,7 @@ export const UpdateUser = (req, res) => {
 }
 
 export const DeleteUser = (req, res) => {
-  User.delete(req.params.id, (err, data) => {
+  User.delete(req.params.id, req.body.isActive, (err, data) => {
     if (err) res.status(err.code).send(err)
     else {
       res.send(data)

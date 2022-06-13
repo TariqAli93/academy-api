@@ -15,9 +15,10 @@ model Users {
   userName       String           @unique @db.VarChar(255)
   phone          String           @unique @db.VarChar(255)
   password       String           @db.VarChar(255)
-  role           Roles            @default(USER)
+  role           String           @default("USER") @db.VarChar(255)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  isActive       Boolean          @default(true)
   student        Students[]
   grades         Grades[]
   Subjects       Subjects[]
@@ -26,11 +27,6 @@ model Users {
   Courses        Courses[]
   Invoice        Invoice[]
   StudentCourses StudentCourses[]
-}
-
-enum Roles {
-  ADMIN
-  USER
 }
 
 model Students {
@@ -144,6 +140,7 @@ model Invoice {
   installment Int           @default(1)
   createdBy   Int
   InvoiceInfo InvoiceInfo[]
+  monthlyPaid Int
   amount      Int
   remaining   Int
   createdAt   DateTime      @default(now())
